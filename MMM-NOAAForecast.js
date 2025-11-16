@@ -718,7 +718,26 @@ Module.register("MMM-NOAAForecast", {
         };
       } else if (currentHasPrecip && !futureHasPrecip) {
         var currentPrecipType = currentHasSnow ? 'snow' : 'rain';
-        var stopTimeStr = moment.parseZone(futureHour.startTime).format(this.config.label_timeFormat);
+
+        // Prefer the end of the last hourly period that had precipitation.
+        // If the hourly period provides an explicit `endTime`, use that.
+        // Otherwise fall back to startTime + 1 hour, and as a last resort use the next period's startTime.
+        var lastPrecipIndex = Math.max(0, i - 1);
+        var lastPrecipHour = this.weatherData.hourly[lastPrecipIndex];
+        var stopMoment = null;
+
+        if (lastPrecipHour && lastPrecipHour.endTime) {
+          stopMoment = moment.parseZone(lastPrecipHour.endTime);
+        } else if (lastPrecipHour && lastPrecipHour.startTime) {
+          stopMoment = moment.parseZone(lastPrecipHour.startTime).add(1, 'hour');
+        } else if (futureHour.startTime) {
+          stopMoment = moment.parseZone(futureHour.startTime);
+        }
+
+        var stopTimeStr = stopMoment && stopMoment.isValid()
+          ? stopMoment.format(this.config.label_timeFormat)
+          : (futureHour.startTime ? moment.parseZone(futureHour.startTime).format(this.config.label_timeFormat) : '');
+
         return {
           type: 'stop',
           precipType: currentPrecipType,
