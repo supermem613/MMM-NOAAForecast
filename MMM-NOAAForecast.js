@@ -669,38 +669,61 @@ Module.register("MMM-NOAAForecast", {
       return null;
     }
 
-    var currentHour = this.weatherData.hourly[0];
-    var currentHasRain = currentHour.rainAccumulation && parseFloat(currentHour.rainAccumulation) > 0;
-    var currentHasSnow = currentHour.snowAccumulation && parseFloat(currentHour.snowAccumulation) > 0;
-    var currentHasPrecip = currentHasRain || currentHasSnow;
+    function iconIndicatesSnow(iconName) {
+      if (!iconName) return false;
+      // snow, sleet, freezing, ice
+      var lower = iconName.toLowerCase();
+      return (
+        lower.indexOf('snow') !== -1 ||
+        lower.indexOf('sleet') !== -1 ||
+        lower.indexOf('freezing') !== -1 ||
+        lower.indexOf('ice') !== -1 ||
+        lower.indexOf('blizzard') !== -1
+      );
+    }
 
-    // Look through the next several hours to find when precipitation starts or stops
+    function iconIndicatesRain(iconName) {
+      if (!iconName) return false;
+      var lower = iconName.toLowerCase();
+      // rain, showers, thunderstorm (tsra)
+      return (
+        lower.indexOf('rain') !== -1 ||
+        lower.indexOf('showers') !== -1 ||
+        lower.indexOf('thunder') !== -1 ||
+        lower.indexOf('tsra') !== -1
+      );
+    }
+
+    var currentHour = this.weatherData.hourly[0];
+    var currentIcon = this.convertNOAAtoIcon(currentHour.icon);
+    var currentHasSnow = iconIndicatesSnow(currentIcon);
+    var currentHasRain = iconIndicatesRain(currentIcon);
+    var currentHasPrecip = currentHasSnow || currentHasRain;
+
     for (var i = 1; i < Math.min(this.weatherData.hourly.length, 24); i++) {
       var futureHour = this.weatherData.hourly[i];
-      var futureHasRain = futureHour.rainAccumulation && parseFloat(futureHour.rainAccumulation) > 0;
-      var futureHasSnow = futureHour.snowAccumulation && parseFloat(futureHour.snowAccumulation) > 0;
-      var futureHasPrecip = futureHasRain || futureHasSnow;
+      var futureIcon = this.convertNOAAtoIcon(futureHour.icon);
+      var futureHasSnow = iconIndicatesSnow(futureIcon);
+      var futureHasRain = iconIndicatesRain(futureIcon);
+      var futureHasPrecip = futureHasSnow || futureHasRain;
 
-      // Check if precipitation status changes
       if (!currentHasPrecip && futureHasPrecip) {
-        // Precipitation starts
-        var precipType = futureHasSnow ? "snow" : "rain";
+        var precipType = futureHasSnow ? 'snow' : 'rain';
         var timeStr = moment.parseZone(futureHour.startTime).format(this.config.label_timeFormat);
         return {
-          type: "start",
+          type: 'start',
           precipType: precipType,
           time: timeStr,
-          message: precipType === "snow" ? `Snow expected at ${timeStr}` : `Rain expected at ${timeStr}`
+          message: precipType === 'snow' ? `Snow expected at ${timeStr}` : `Rain expected at ${timeStr}`
         };
       } else if (currentHasPrecip && !futureHasPrecip) {
-        // Precipitation stops
-        var currentPrecipType = currentHasSnow ? "snow" : "rain";
+        var currentPrecipType = currentHasSnow ? 'snow' : 'rain';
         var stopTimeStr = moment.parseZone(futureHour.startTime).format(this.config.label_timeFormat);
         return {
-          type: "stop",
+          type: 'stop',
           precipType: currentPrecipType,
           time: stopTimeStr,
-          message: currentPrecipType === "snow" ? `Snow ending by ${stopTimeStr}` : `Rain ending by ${stopTimeStr}`
+          message: currentPrecipType === 'snow' ? `Snow ending by ${stopTimeStr}` : `Rain ending by ${stopTimeStr}`
         };
       }
     }
