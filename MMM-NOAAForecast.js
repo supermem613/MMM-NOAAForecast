@@ -699,6 +699,7 @@ Module.register("MMM-NOAAForecast", {
     var currentHasSnow = iconIndicatesSnow(currentIcon);
     var currentHasRain = iconIndicatesRain(currentIcon);
     var currentHasPrecip = currentHasSnow || currentHasRain;
+    var now = moment();
 
     for (var i = 1; i < Math.min(this.weatherData.hourly.length, 24); i++) {
       var futureHour = this.weatherData.hourly[i];
@@ -709,7 +710,18 @@ Module.register("MMM-NOAAForecast", {
 
       if (!currentHasPrecip && futureHasPrecip) {
         var precipType = futureHasSnow ? 'snow' : 'rain';
-        var timeStr = moment.parseZone(futureHour.startTime).format(this.config.label_timeFormat);
+        var futureMoment = futureHour.startTime ? moment.parseZone(futureHour.startTime) : null;
+        if (!futureMoment || !futureMoment.isValid()) {
+          // if we can't determine a valid future time, skip this candidate
+          continue;
+        }
+
+        // Only show a start message if the predicted start is strictly in the future
+        if (!futureMoment.isAfter(now)) {
+          continue;
+        }
+
+        var timeStr = futureMoment.format(this.config.label_timeFormat);
         return {
           type: 'start',
           precipType: precipType,
@@ -734,9 +746,17 @@ Module.register("MMM-NOAAForecast", {
           stopMoment = moment.parseZone(futureHour.startTime);
         }
 
-        var stopTimeStr = stopMoment && stopMoment.isValid()
-          ? stopMoment.format(this.config.label_timeFormat)
-          : (futureHour.startTime ? moment.parseZone(futureHour.startTime).format(this.config.label_timeFormat) : '');
+        // If we couldn't determine a valid stop moment, skip this candidate
+        if (!stopMoment || !stopMoment.isValid()) {
+          continue;
+        }
+
+        // Only show a stop message if the predicted stop is strictly in the future
+        if (!stopMoment.isAfter(now)) {
+          continue;
+        }
+
+        var stopTimeStr = stopMoment.format(this.config.label_timeFormat);
 
         return {
           type: 'stop',
