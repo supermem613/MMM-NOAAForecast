@@ -647,7 +647,7 @@ Module.register("MMM-NOAAForecast", {
         );
 
         hourly.windGust = this.getGridValueWithinDuration(
-          this.weatherData.hourly[i].startTime,
+          this.weatherData.hourly[j].startTime,
           "windGust"
         );
 
