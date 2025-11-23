@@ -349,10 +349,11 @@ Module.register("MMM-NOAAForecast", {
             if (!targetMoment.isValid()) {
               continue;
             }
-            // Treat the interval as a calendar day: check if the target falls within the same day as the startMoment
-            var dayStart = startMoment.clone().startOf("day");
-            var dayEnd = dayStart.clone().add(1, "day");
-            if (targetMoment.isSameOrAfter(dayStart) && targetMoment.isBefore(dayEnd)) {
+            // Compare calendar dates as strings (timezone-aware)
+            // Extract "YYYY-MM-DD" from each timestamp in its own timezone
+            var startDate = startMoment.format("YYYY-MM-DD");
+            var targetDate = targetMoment.format("YYYY-MM-DD");
+            if (startDate === targetDate) {
               return entry.value;
             } else {
               continue;
@@ -459,8 +460,8 @@ Module.register("MMM-NOAAForecast", {
     }
 
     var val = this.findValueForTimestampMatchingDay(
-        startTime,
-        this.weatherData.grid[gridKey].values
+      startTime,
+      this.weatherData.grid[gridKey].values
     );
 
     return this.convertIfNeeded(val, this.weatherData.grid[gridKey].uom);
@@ -477,8 +478,8 @@ Module.register("MMM-NOAAForecast", {
     }
 
     var val = this.findValueForTimestamp(
-        startTime,
-        this.weatherData.grid[gridKey].values
+      startTime,
+      this.weatherData.grid[gridKey].values
     );
 
     return this.convertIfNeeded(val, this.weatherData.grid[gridKey].uom);
@@ -665,7 +666,11 @@ Module.register("MMM-NOAAForecast", {
       Returns an object with the hour and type of change, or null if no significant change is detected.
     */
   analyzePrecipitationChange: function () {
-    if (!this.config.showPrecipitationStartStop || !Array.isArray(this.weatherData.hourly) || this.weatherData.hourly.length < 2) {
+    if (
+      !this.config.showPrecipitationStartStop ||
+      !Array.isArray(this.weatherData.hourly) ||
+      this.weatherData.hourly.length < 2
+    ) {
       return null;
     }
 
@@ -674,11 +679,11 @@ Module.register("MMM-NOAAForecast", {
       // snow, sleet, freezing, ice
       var lower = iconName.toLowerCase();
       return (
-        lower.indexOf('snow') !== -1 ||
-        lower.indexOf('sleet') !== -1 ||
-        lower.indexOf('freezing') !== -1 ||
-        lower.indexOf('ice') !== -1 ||
-        lower.indexOf('blizzard') !== -1
+        lower.indexOf("snow") !== -1 ||
+        lower.indexOf("sleet") !== -1 ||
+        lower.indexOf("freezing") !== -1 ||
+        lower.indexOf("ice") !== -1 ||
+        lower.indexOf("blizzard") !== -1
       );
     }
 
@@ -687,10 +692,10 @@ Module.register("MMM-NOAAForecast", {
       var lower = iconName.toLowerCase();
       // rain, showers, thunderstorm (tsra)
       return (
-        lower.indexOf('rain') !== -1 ||
-        lower.indexOf('showers') !== -1 ||
-        lower.indexOf('thunder') !== -1 ||
-        lower.indexOf('tsra') !== -1
+        lower.indexOf("rain") !== -1 ||
+        lower.indexOf("showers") !== -1 ||
+        lower.indexOf("thunder") !== -1 ||
+        lower.indexOf("tsra") !== -1
       );
     }
 
@@ -709,8 +714,10 @@ Module.register("MMM-NOAAForecast", {
       var futureHasPrecip = futureHasSnow || futureHasRain;
 
       if (!currentHasPrecip && futureHasPrecip) {
-        var precipType = futureHasSnow ? 'snow' : 'rain';
-        var futureMoment = futureHour.startTime ? moment.parseZone(futureHour.startTime) : null;
+        var precipType = futureHasSnow ? "snow" : "rain";
+        var futureMoment = futureHour.startTime
+          ? moment.parseZone(futureHour.startTime)
+          : null;
         if (!futureMoment || !futureMoment.isValid()) {
           // if we can't determine a valid future time, skip this candidate
           continue;
@@ -723,13 +730,16 @@ Module.register("MMM-NOAAForecast", {
 
         var timeStr = futureMoment.format(this.config.label_timeFormat);
         return {
-          type: 'start',
+          type: "start",
           precipType: precipType,
           time: timeStr,
-          message: precipType === 'snow' ? `Snow expected at ${timeStr}` : `Rain expected at ${timeStr}`
+          message:
+            precipType === "snow"
+              ? `Snow expected at ${timeStr}`
+              : `Rain expected at ${timeStr}`
         };
       } else if (currentHasPrecip && !futureHasPrecip) {
-        var currentPrecipType = currentHasSnow ? 'snow' : 'rain';
+        var currentPrecipType = currentHasSnow ? "snow" : "rain";
 
         // Prefer the end of the last hourly period that had precipitation.
         // If the hourly period provides an explicit `endTime`, use that.
@@ -741,7 +751,9 @@ Module.register("MMM-NOAAForecast", {
         if (lastPrecipHour && lastPrecipHour.endTime) {
           stopMoment = moment.parseZone(lastPrecipHour.endTime);
         } else if (lastPrecipHour && lastPrecipHour.startTime) {
-          stopMoment = moment.parseZone(lastPrecipHour.startTime).add(1, 'hour');
+          stopMoment = moment
+            .parseZone(lastPrecipHour.startTime)
+            .add(1, "hour");
         } else if (futureHour.startTime) {
           stopMoment = moment.parseZone(futureHour.startTime);
         }
@@ -759,10 +771,13 @@ Module.register("MMM-NOAAForecast", {
         var stopTimeStr = stopMoment.format(this.config.label_timeFormat);
 
         return {
-          type: 'stop',
+          type: "stop",
           precipType: currentPrecipType,
           time: stopTimeStr,
-          message: currentPrecipType === 'snow' ? `Snow ending by ${stopTimeStr}` : `Rain ending by ${stopTimeStr}`
+          message:
+            currentPrecipType === "snow"
+              ? `Snow ending by ${stopTimeStr}`
+              : `Rain ending by ${stopTimeStr}`
         };
       }
     }
@@ -806,16 +821,14 @@ Module.register("MMM-NOAAForecast", {
 
     var dailies = [];
     if (this.config.showDailyForecast) {
-
       // Find the index of the first daily forecast whose startTime is tomorrow
       var tomorrow = moment().add(1, "day").startOf("day");
       var firstTomorrowIndex = -1;
-      if (
-        this.weatherData &&
-        Array.isArray(this.weatherData.daily)
-      ) {
+      if (this.weatherData && Array.isArray(this.weatherData.daily)) {
         for (var t = 0; t < this.weatherData.daily.length; t++) {
-          var dailyStart = moment.parseZone(this.weatherData.daily[t].startTime);
+          var dailyStart = moment.parseZone(
+            this.weatherData.daily[t].startTime
+          );
           if (dailyStart.isSame(tomorrow, "day")) {
             firstTomorrowIndex = t;
             break;
@@ -828,8 +841,7 @@ Module.register("MMM-NOAAForecast", {
       var previousEntryDate = undefined;
 
       var dailiesShows = 0;
-      for (i; i < this.weatherData.daily.length; i++)
-      {
+      for (i; i < this.weatherData.daily.length; i++) {
         if (this.weatherData.daily[i] === null) {
           break;
         }
@@ -851,7 +863,6 @@ Module.register("MMM-NOAAForecast", {
         );
 
         dailiesShows++;
-
       }
     }
 
@@ -898,7 +909,9 @@ Module.register("MMM-NOAAForecast", {
 
     // --------- Date / Time Display ---------
     //time (e.g.: "5 PM")
-    fItem.time = moment.parseZone(fData.startTime).format(this.config.label_timeFormat);
+    fItem.time = moment
+      .parseZone(fData.startTime)
+      .format(this.config.label_timeFormat);
 
     // --------- Icon ---------
     if (this.config.useAnimatedIcons && !this.config.animateMainIconOnly) {
@@ -933,7 +946,8 @@ Module.register("MMM-NOAAForecast", {
 
     // --------- Date / Time Display ---------
     //day name (e.g.: "MON")
-    fItem.day = this.config.label_days[moment.parseZone(fData.startTime).format("d")];
+    fItem.day =
+      this.config.label_days[moment.parseZone(fData.startTime).format("d")];
 
     // --------- Icon ---------
     if (this.config.useAnimatedIcons && !this.config.animateMainIconOnly) {
@@ -970,14 +984,18 @@ Module.register("MMM-NOAAForecast", {
       Returns a formatted data object for High / Low temperature range
      */
   formatHiLowTemperature: function (h, l) {
+    // Defensive guard: prevent NaN from appearing if values are undefined/null
+    var highValue =
+      h !== null && h !== undefined && !isNaN(h) ? Math.round(h) : "--";
+    var lowValue =
+      l !== null && l !== undefined && !isNaN(l) ? Math.round(l) : "--";
+
     return {
       high: `${
-        (!this.config.concise ? `${this.config.label_high} ` : "") +
-        Math.round(h)
+        (!this.config.concise ? `${this.config.label_high} ` : "") + highValue
       }°`,
       low: `${
-        (!this.config.concise ? `${this.config.label_low} ` : "") +
-        Math.round(l)
+        (!this.config.concise ? `${this.config.label_low} ` : "") + lowValue
       }°`
     };
   },

@@ -1,0 +1,23 @@
+{
+  "name": "MMM-NOAAForecast",
+  "version": "1.0.0",
+  "description": "MagicMirror module to display weather forecast from NOAA",
+  "main": "MMM-NOAAForecast.js",
+  "scripts": {
+    "test": "jest --config=jest.config.js",
+    "test:verbose": "jest --config=jest.config.js --verbose",
+    "test:coverage": "jest --config=jest.config.js --coverage"
+  },
+  "keywords": [
+    "MagicMirror",
+    "module",
+    "weather",
+    "forecast",
+    "NOAA"
+  ],
+  "author": "Marcus Markiewicz",
+  "license": "MIT",
+  "devDependencies": {
+    "jest": "^29.0.0"
+  }
+}

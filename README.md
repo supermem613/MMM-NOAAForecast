@@ -176,7 +176,7 @@ Find out your latitude and longitude here:
   disabled: false,
   config: {
     latitude: "51.506130",
-    longitude: "-0.090270",      
+    longitude: "-0.090270",
     iconset: "4c",
     concise: false,
     forecastLayout: "table"
@@ -235,3 +235,31 @@ structure and aesthetic.
 is licensed under the MIT License.<br />
 
 **Data from [NOAA](https://www.weather.gov/documentation/services-web-api)** <br/>
+
+## Testing
+
+This module includes a comprehensive test suite located in the `tests/` directory. The tests validate core functionality and help prevent regressions.
+
+### Running Tests
+
+From the module directory:
+```bash
+cd tests
+./run_tests.ps1
+```
+
+Or from the MagicMirror root:
+```bash
+npx jest --config=modules/MMM-NOAAForecast/jest.config.js
+```
+
+### Test Coverage
+
+The test suite includes 23 tests covering:
+- Grid data retrieval and timestamp matching
+- Temperature formatting and unit conversion
+- Data preprocessing and integration
+- End-to-end workflow simulation
+- Edge cases (null, undefined, invalid data)
+
+See `tests/README.md` for detailed documentation about the test suite and root cause analysis for known issues.
