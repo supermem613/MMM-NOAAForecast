@@ -557,45 +557,47 @@ Module.register("MMM-NOAAForecast", {
   },
 
   /*
-    We need to pre-process the dailies and hourly to augment the data there based on grid data.
-    */
-  preProcessWeatherData: function () {
-    if (Array.isArray(this.weatherData.daily)) {
-      // For daily, we need to augment min, max temperatures, rain, snow accumulation and gust data.
-      for (var i = 0; i < this.weatherData.daily.length; i++) {
-        var daily = this.weatherData.daily[i];
+    Calculate min and max temperatures from hourly data for a specific day.
+    Returns an object with minTemp and maxTemp properties, or null values if no data found.
+  */
+  calculateDailyMinMaxFromHourly: function (dailyStartTime) {
+    var result = { minTemp: null, maxTemp: null };
 
-        daily.temperature = this.convertIfNeeded(
-          daily.temperature,
-          daily.temperatureUnit
-        );
+    var dailyStart = moment.parseZone(dailyStartTime);
+    if (!dailyStart.isValid() || !Array.isArray(this.weatherData.hourly)) {
+      return result;
+    }
 
-        daily.maxTemperature = this.getGridValueMatchingDay(
-          this.weatherData.daily[i].startTime,
-          "maxTemperature"
-        );
+    for (var h = 0; h < this.weatherData.hourly.length; h++) {
+      var hourlyEntry = this.weatherData.hourly[h];
+      if (!hourlyEntry || !hourlyEntry.startTime) continue;
 
-        daily.minTemperature = this.getGridValueMatchingDay(
-          this.weatherData.daily[i].startTime,
-          "minTemperature"
-        );
+      var hourlyStart = moment.parseZone(hourlyEntry.startTime);
+      if (!hourlyStart.isValid()) continue;
 
-        // IMPORTANT: Commonly NOAA will only have 2-3 days out of data here, so
-        // this may come out undefined even though it does provide a % chance of rain.
-        daily.snowAccumulation = this.accumulateGridValue(
-          this.weatherData.daily[i].startTime,
-          "iceAccumulation"
-        );
-
-        // IMPORTANT: Commonly NOAA will only have 2-3 days out of data here, so
-        // this may come out undefined even though it does provide a % chance of rain.
-        daily.rainAccumulation = this.accumulateGridValue(
-          this.weatherData.daily[i].startTime,
-          "quantitativePrecipitation"
-        );
+      // Check if this hourly entry belongs to the same day
+      if (
+        hourlyStart.format("YYYY-MM-DD") === dailyStart.format("YYYY-MM-DD")
+      ) {
+        var temp = parseFloat(hourlyEntry.temperature);
+        if (!isNaN(temp)) {
+          if (result.minTemp === null || temp < result.minTemp) {
+            result.minTemp = temp;
+          }
+          if (result.maxTemp === null || temp > result.maxTemp) {
+            result.maxTemp = temp;
+          }
+        }
       }
     }
 
+    return result;
+  },
+
+  /*
+    We need to pre-process the dailies and hourly to augment the data there based on grid data.
+    */
+  preProcessWeatherData: function () {
     if (Array.isArray(this.weatherData.hourly)) {
       // Trim hourly array so it begins at the start of the current hour
       var hourStart = moment().startOf("hour");
@@ -656,6 +658,87 @@ Module.register("MMM-NOAAForecast", {
           hourly.temperature,
           hourly.windGust,
           hourly.relativeHumidity.value
+        );
+      }
+    }
+
+    if (Array.isArray(this.weatherData.daily)) {
+      // For daily, we need to augment min, max temperatures, rain, snow accumulation and gust data.
+      for (var i = 0; i < this.weatherData.daily.length; i++) {
+        var daily = this.weatherData.daily[i];
+
+        daily.temperature = this.convertIfNeeded(
+          daily.temperature,
+          daily.temperatureUnit
+        );
+
+        // Calculate min/max temperatures from hourly data for this day
+        var temps = this.calculateDailyMinMaxFromHourly(daily.startTime);
+
+        // Get grid data values
+        var gridMaxTemp = this.getGridValueMatchingDay(
+          this.weatherData.daily[i].startTime,
+          "maxTemperature"
+        );
+        var gridMinTemp = this.getGridValueMatchingDay(
+          this.weatherData.daily[i].startTime,
+          "minTemperature"
+        );
+
+        // Convert grid values to numbers for comparison
+        var gridMaxNum =
+          gridMaxTemp !== undefined ? parseFloat(gridMaxTemp) : null;
+        var gridMinNum =
+          gridMinTemp !== undefined ? parseFloat(gridMinTemp) : null;
+
+        // Determine final max temperature: use the maximum of available values
+        if (
+          temps.maxTemp !== null &&
+          gridMaxNum !== null &&
+          !isNaN(gridMaxNum)
+        ) {
+          daily.maxTemperature = Math.max(temps.maxTemp, gridMaxNum).toString();
+        } else if (temps.maxTemp !== null) {
+          daily.maxTemperature = temps.maxTemp.toString();
+        } else if (gridMaxTemp !== undefined) {
+          daily.maxTemperature =
+            gridMaxNum !== null && !isNaN(gridMaxNum)
+              ? gridMaxNum.toString()
+              : gridMaxTemp.toString();
+        } else {
+          daily.maxTemperature = undefined;
+        }
+
+        // Determine final min temperature: use the minimum of available values
+        if (
+          temps.minTemp !== null &&
+          gridMinNum !== null &&
+          !isNaN(gridMinNum)
+        ) {
+          daily.minTemperature = Math.min(temps.minTemp, gridMinNum).toString();
+        } else if (temps.minTemp !== null) {
+          daily.minTemperature = temps.minTemp.toString();
+        } else if (gridMinTemp !== undefined) {
+          daily.minTemperature =
+            gridMinNum !== null && !isNaN(gridMinNum)
+              ? gridMinNum.toString()
+              : gridMinTemp.toString();
+        } else {
+          daily.minTemperature = undefined;
+        }
+
+        // IMPORTANT: Commonly NOAA will only have 2-3 days out of data here, so
+        // this may come out undefined even though it does provide a % chance of rain.
+        daily.snowAccumulation = this.accumulateGridValue(
+          this.weatherData.daily[i].startTime,
+          "iceAccumulation"
+        );
+
+        // IMPORTANT: Commonly NOAA will only have 2-3 days out of data here, so
+        // this may come out undefined even though it does provide a % chance of rain.
+        daily.rainAccumulation = this.accumulateGridValue(
+          this.weatherData.daily[i].startTime,
+          "quantitativePrecipitation"
         );
       }
     }

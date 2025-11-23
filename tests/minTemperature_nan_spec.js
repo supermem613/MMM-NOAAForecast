@@ -286,8 +286,8 @@ describe("MMM-NOAAForecast minTemperature NaN Issue", () => {
 
       module.preProcessWeatherData();
 
-      expect(module.weatherData.daily[0].minTemperature).toBe(45);
-      expect(module.weatherData.daily[0].maxTemperature).toBe(75);
+      expect(module.weatherData.daily[0].minTemperature).toBe("45");
+      expect(module.weatherData.daily[0].maxTemperature).toBe("75");
     });
 
     it("should handle sparse grid data (only first 2 days have minTemp)", () => {
@@ -337,8 +337,8 @@ describe("MMM-NOAAForecast minTemperature NaN Issue", () => {
       module.preProcessWeatherData();
 
       // First two days should have minTemperature
-      expect(module.weatherData.daily[0].minTemperature).toBe(45);
-      expect(module.weatherData.daily[1].minTemperature).toBe(48);
+      expect(module.weatherData.daily[0].minTemperature).toBe("45");
+      expect(module.weatherData.daily[1].minTemperature).toBe("48");
 
       // Days 3 and 4 should be undefined (this causes NaN later)
       expect(module.weatherData.daily[2].minTemperature).toBeUndefined();
@@ -497,8 +497,8 @@ describe("MMM-NOAAForecast minTemperature NaN Issue", () => {
       module.preProcessWeatherData();
 
       // Verify the issue: Days 1-2 have minTemp, days 3-4 don't
-      expect(module.weatherData.daily[0].minTemperature).toBe(45);
-      expect(module.weatherData.daily[1].minTemperature).toBe(48);
+      expect(module.weatherData.daily[0].minTemperature).toBe("45");
+      expect(module.weatherData.daily[1].minTemperature).toBe("48");
       expect(module.weatherData.daily[2].minTemperature).toBeUndefined();
       expect(module.weatherData.daily[3].minTemperature).toBeUndefined();
 
