@@ -812,14 +812,16 @@ Module.register("MMM-NOAAForecast", {
         }
 
         var timeStr = futureMoment.format(this.config.label_timeFormat);
+        var isTomorrow = !futureMoment.isSame(now, "day");
+        var tomorrowStr = isTomorrow ? " tomorrow" : "";
         return {
           type: "start",
           precipType: precipType,
           time: timeStr,
           message:
             precipType === "snow"
-              ? `Snow expected at ${timeStr}`
-              : `Rain expected at ${timeStr}`
+              ? `Snow expected at ${timeStr}${tomorrowStr}`
+              : `Rain expected at ${timeStr}${tomorrowStr}`
         };
       } else if (currentHasPrecip && !futureHasPrecip) {
         var currentPrecipType = currentHasSnow ? "snow" : "rain";
@@ -852,6 +854,8 @@ Module.register("MMM-NOAAForecast", {
         }
 
         var stopTimeStr = stopMoment.format(this.config.label_timeFormat);
+        var isTomorrow = !stopMoment.isSame(now, "day");
+        var tomorrowStr = isTomorrow ? " tomorrow" : "";
 
         return {
           type: "stop",
@@ -859,8 +863,8 @@ Module.register("MMM-NOAAForecast", {
           time: stopTimeStr,
           message:
             currentPrecipType === "snow"
-              ? `Snow ending by ${stopTimeStr}`
-              : `Rain ending by ${stopTimeStr}`
+              ? `Snow ending by ${stopTimeStr}${tomorrowStr}`
+              : `Rain ending by ${stopTimeStr}${tomorrowStr}`
         };
       }
     }
