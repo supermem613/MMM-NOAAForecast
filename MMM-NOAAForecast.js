@@ -1226,7 +1226,8 @@ Module.register("MMM-NOAAForecast", {
       rain_snow: "snow",
       rain_sleet: "sleet",
       snow_sleet: "snow",
-      fzra: "Freezing rain",
+      // Freezing rain: use the existing sleet icon (iconsets do not include a "Freezing rain" filename)
+      fzra: "sleet",
       rain_fzra: "rain",
       snow_fzra: "snow",
       sleet: "sleet",
@@ -1238,7 +1239,8 @@ Module.register("MMM-NOAAForecast", {
       tsra_hi: "thunderstorm",
       tornado: "tornado",
       hurricane: "tornado",
-      tropical_storm: "storm",
+      // No dedicated hurricane/tropical-storm icon in bundled sets; use thunderstorm as a reasonable fallback.
+      tropical_storm: "thunderstorm",
       dust: "fog",
       smoke: "fog",
       haze: "fog",
