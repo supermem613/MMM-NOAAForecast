@@ -757,47 +757,57 @@ Module.register("MMM-NOAAForecast", {
       return null;
     }
 
-    function iconIndicatesSnow(iconName) {
-      if (!iconName) return false;
-      // snow, sleet, freezing, ice
+    function getPrecipTypeFromIcon(iconName) {
+      if (!iconName) return null;
       var lower = iconName.toLowerCase();
-      return (
-        lower.indexOf("snow") !== -1 ||
+
+      // Treat sleet/freezing rain/ice as its own type so messaging is accurate.
+      if (
         lower.indexOf("sleet") !== -1 ||
         lower.indexOf("freezing") !== -1 ||
-        lower.indexOf("ice") !== -1 ||
-        lower.indexOf("blizzard") !== -1
-      );
-    }
+        lower.indexOf("ice") !== -1
+      ) {
+        return "sleet";
+      }
 
-    function iconIndicatesRain(iconName) {
-      if (!iconName) return false;
-      var lower = iconName.toLowerCase();
+      if (lower.indexOf("snow") !== -1 || lower.indexOf("blizzard") !== -1) {
+        return "snow";
+      }
+
       // rain, showers, thunderstorm (tsra)
-      return (
+      if (
         lower.indexOf("rain") !== -1 ||
         lower.indexOf("showers") !== -1 ||
         lower.indexOf("thunder") !== -1 ||
         lower.indexOf("tsra") !== -1
-      );
+      ) {
+        return "rain";
+      }
+
+      return null;
+    }
+
+    function formatPrecipLabel(precipType) {
+      if (precipType === "snow") return "Snow";
+      if (precipType === "rain") return "Rain";
+      if (precipType === "sleet") return "Sleet";
+      return "Precipitation";
     }
 
     var currentHour = this.weatherData.hourly[0];
     var currentIcon = this.convertNOAAtoIcon(currentHour.icon);
-    var currentHasSnow = iconIndicatesSnow(currentIcon);
-    var currentHasRain = iconIndicatesRain(currentIcon);
-    var currentHasPrecip = currentHasSnow || currentHasRain;
+    var currentPrecipType = getPrecipTypeFromIcon(currentIcon);
+    var currentHasPrecip = !!currentPrecipType;
     var now = moment();
 
     for (var i = 1; i < Math.min(this.weatherData.hourly.length, 24); i++) {
       var futureHour = this.weatherData.hourly[i];
       var futureIcon = this.convertNOAAtoIcon(futureHour.icon);
-      var futureHasSnow = iconIndicatesSnow(futureIcon);
-      var futureHasRain = iconIndicatesRain(futureIcon);
-      var futureHasPrecip = futureHasSnow || futureHasRain;
+      var futurePrecipType = getPrecipTypeFromIcon(futureIcon);
+      var futureHasPrecip = !!futurePrecipType;
 
       if (!currentHasPrecip && futureHasPrecip) {
-        var precipType = futureHasSnow ? "snow" : "rain";
+        var precipType = futurePrecipType;
         var futureMoment = futureHour.startTime
           ? moment.parseZone(futureHour.startTime)
           : null;
@@ -814,18 +824,14 @@ Module.register("MMM-NOAAForecast", {
         var timeStr = futureMoment.format(this.config.label_timeFormat);
         var isTomorrow = !futureMoment.isSame(now, "day");
         var tomorrowStr = isTomorrow ? " tomorrow" : "";
+        var label = formatPrecipLabel(precipType);
         return {
           type: "start",
           precipType: precipType,
           time: timeStr,
-          message:
-            precipType === "snow"
-              ? `Snow expected at ${timeStr}${tomorrowStr}`
-              : `Rain expected at ${timeStr}${tomorrowStr}`
+          message: `${label} expected at ${timeStr}${tomorrowStr}`
         };
       } else if (currentHasPrecip && !futureHasPrecip) {
-        var currentPrecipType = currentHasSnow ? "snow" : "rain";
-
         // Prefer the end of the last hourly period that had precipitation.
         // If the hourly period provides an explicit `endTime`, use that.
         // Otherwise fall back to startTime + 1 hour, and as a last resort use the next period's startTime.
@@ -856,15 +862,13 @@ Module.register("MMM-NOAAForecast", {
         var stopTimeStr = stopMoment.format(this.config.label_timeFormat);
         var isTomorrow = !stopMoment.isSame(now, "day");
         var tomorrowStr = isTomorrow ? " tomorrow" : "";
+        var label = formatPrecipLabel(currentPrecipType);
 
         return {
           type: "stop",
           precipType: currentPrecipType,
           time: stopTimeStr,
-          message:
-            currentPrecipType === "snow"
-              ? `Snow ending by ${stopTimeStr}${tomorrowStr}`
-              : `Rain ending by ${stopTimeStr}${tomorrowStr}`
+          message: `${label} ending by ${stopTimeStr}${tomorrowStr}`
         };
       }
     }
