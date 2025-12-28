@@ -18,6 +18,7 @@
   "author": "Marcus Markiewicz",
   "license": "MIT",
   "devDependencies": {
-    "jest": "^29.0.0"
+    "jest": "^29.0.0",
+    "moment": "^2.30.1"
   }
 }
