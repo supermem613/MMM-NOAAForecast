@@ -41,6 +41,10 @@ Find out your latitude and longitude here:
   </thead>
   <tbody>
     <tr>
+      <td><code>frameWidth</code></td>
+      <td>Width of the rendered module column, in pixels. Increase to align with neighbouring modules in the same region.<br><br><strong>Type</strong> <code>Number</code><br>Defaults to <code>300</code></td>
+    </tr>
+    <tr>
       <td><code>updateInterval</code></td>
       <td>How frequently, in minutes, to poll for data. Be careful not to set this too frequent so that you don't exceed Dark Sky's 1000 free requests per day cap.<br><br><strong>Type</strong> <code>Number</code><br>Defaults to <code>10</code></td>
     </tr>
@@ -196,15 +200,18 @@ Find out your latitude and longitude here:
 
 ## Styling
 
-This module is set to be 300px wide by default.  If you wish to override it, you can add the following to your `custom.css` file:
+The module's width is controlled by the [`frameWidth`](#configuration) config option (default `300px`). Set it to match the width of neighbouring modules in the same region — for example, `frameWidth: 400` if your right column hosts a 400px-wide module like MMM-AINews.
 
-```
-.MMM-NOAAForecast .module-content {
-  width: 500px; /* adjust this to taste */
-}
-```
+### Visual conventions
 
-Most important elements of this module have one or more class names applied. Examine the `MMM-NOAAForecast.css` or inspect elements directly with your browser of choice to determine what class you would like to override.
+- **Today / next-upcoming accent.** The first hourly row receives an amber (`#f5b041`) left border and time label; if `includeTodayInDailyForecast` is enabled, today's daily row receives the same accent on its day name. This mirrors the convention used by sibling modules so the eye finds "now" instantly.
+- **Single divider between hourly and daily.** Per-row borders have been replaced with row spacing and one divider between the hourly and daily sections — less line noise, easier scanning at a glance.
+- **Column-header icons replace inline icons in table rows.** When `showForecastTableColumnHeaderIcons: true` and `forecastLayout: "table"`, the precipitation and wind icons rendered inline in each row are suppressed, since the column headers already convey the same signal.
+- **"Feels like" temperature is labelled.** The current-conditions row reads e.g. `52°  FEELS LIKE 47°` so the secondary temperature is unambiguous.
+
+### Custom overrides
+
+Most important elements of this module have one or more class names applied. Examine the `MMM-NOAAForecast.css` file or inspect elements directly with your browser of choice to determine what class you would like to override from your `custom.css`.
 
 ## Attributions
 

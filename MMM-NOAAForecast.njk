@@ -1,4 +1,4 @@
-<div class="wrapper {{ config.forecastLayout }} {% if config.colored %} colored{% endif %}{% if config.showInlineIcons %} inline-icons{% endif %}{% if config.forecastHeaderText %} with-forecast-header{% endif %}">
+<div class="wrapper {{ config.forecastLayout }} {% if config.colored %} colored{% endif %}{% if config.showInlineIcons %} inline-icons{% endif %}{% if config.forecastHeaderText %} with-forecast-header{% endif %}{% if config.showForecastTableColumnHeaderIcons and config.forecastLayout == "table" %} with-column-header-icons{% endif %}" style="width:{{ config.frameWidth }}px">
 
   {% if loading %}
 
@@ -17,7 +17,7 @@
           {% endif %}
           <span class="current temperature bright large light">{{ forecast.currently.temperature }}</span>
           {% if config.showFeelsLike %}
-            <span class="current feelslike dimmed light">{{ forecast.currently.feelslike }}</span>
+            <span class="current feelslike dimmed light"><span class="feelslike-label">feels like</span> {{ forecast.currently.feelslike }}</span>
           {% endif %}
         </span>
       </div>
@@ -115,7 +115,7 @@
 
 
           {% for h in forecast.hourly %}
-            <div class="forecast-item hourly">
+            <div class="forecast-item hourly{% if h.isFirst %} next-upcoming{% endif %}">
               <span class="time">{{ h.time }}</span>
               <span class="forecast-icon-container">
               {% if h.animatedIconId %}
@@ -169,7 +169,7 @@
 
 
           {% for d in forecast.daily %}
-            <div class="forecast-item daily">
+            <div class="forecast-item daily{% if d.isToday %} today{% endif %}">
               <span class="day-name">{{ d.day }}</span>
               <span class="forecast-icon-container">
               {% if d.animatedIconId %}

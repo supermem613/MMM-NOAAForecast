@@ -12,6 +12,7 @@ Module.register("MMM-NOAAForecast", {
     latitude: "",
     longitude: "",
     units: config.units,
+    frameWidth: 300, // px width of the rendered module column; raise to align with neighbouring modules
     updateInterval: 10, // minutes
     requestDelay: 0,
     showCurrentConditions: true,
@@ -757,6 +758,12 @@ Module.register("MMM-NOAAForecast", {
       return null;
     }
 
+    /**
+     * Map a NOAA icon name to a coarse precipitation type.
+     *
+     * @param {string} iconName NOAA icon name (e.g., "rain", "snow", "tsra").
+     * @returns {string|null} "rain" | "snow" | "sleet" | null when no precip is implied.
+     */
     function getPrecipTypeFromIcon(iconName) {
       if (!iconName) return null;
       var lower = iconName.toLowerCase();
@@ -787,6 +794,12 @@ Module.register("MMM-NOAAForecast", {
       return null;
     }
 
+    /**
+     * Render a user-facing label for a given precipitation type.
+     *
+     * @param {string|null} precipType One of "rain", "snow", "sleet", or null/other.
+     * @returns {string} Capitalized label suitable for inline messaging.
+     */
     function formatPrecipLabel(precipType) {
       if (precipType === "snow") return "Snow";
       if (precipType === "rain") return "Rain";
@@ -860,15 +873,15 @@ Module.register("MMM-NOAAForecast", {
         }
 
         var stopTimeStr = stopMoment.format(this.config.label_timeFormat);
-        var isTomorrow = !stopMoment.isSame(now, "day");
-        var tomorrowStr = isTomorrow ? " tomorrow" : "";
-        var label = formatPrecipLabel(currentPrecipType);
+        var stopIsTomorrow = !stopMoment.isSame(now, "day");
+        var stopTomorrowStr = stopIsTomorrow ? " tomorrow" : "";
+        var stopLabel = formatPrecipLabel(currentPrecipType);
 
         return {
           type: "stop",
           precipType: currentPrecipType,
           time: stopTimeStr,
-          message: `${label} ending by ${stopTimeStr}${tomorrowStr}`
+          message: `${stopLabel} ending by ${stopTimeStr}${stopTomorrowStr}`
         };
       }
     }
@@ -901,7 +914,8 @@ Module.register("MMM-NOAAForecast", {
         hourlies.push(
           this.forecastHourlyFactory(
             this.weatherData.hourly[currentIndex],
-            "hourly"
+            "hourly",
+            displayCounter === 0
           )
         );
 
@@ -995,8 +1009,9 @@ Module.register("MMM-NOAAForecast", {
     };
   },
 
-  forecastHourlyFactory: function (fData, type) {
+  forecastHourlyFactory: function (fData, type, isFirst) {
     var fItem = new Object();
+    fItem.isFirst = !!isFirst;
 
     // --------- Date / Time Display ---------
     //time (e.g.: "5 PM")
@@ -1037,8 +1052,9 @@ Module.register("MMM-NOAAForecast", {
 
     // --------- Date / Time Display ---------
     //day name (e.g.: "MON")
-    fItem.day =
-      this.config.label_days[moment.parseZone(fData.startTime).format("d")];
+    var entryStart = moment.parseZone(fData.startTime);
+    fItem.day = this.config.label_days[entryStart.format("d")];
+    fItem.isToday = entryStart.isSame(moment(), "day");
 
     // --------- Icon ---------
     if (this.config.useAnimatedIcons && !this.config.animateMainIconOnly) {
