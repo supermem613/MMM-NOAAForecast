@@ -134,9 +134,9 @@
                   {% else %}
                     <img class="inline-icon rain" src="{{ inlineIcons.rain }}" />
                   {% endif %}
-                    <span class="pop">{{ h.precipitation.pop }}</span>
+                    <span class="pop precipitation-pop">{{ h.precipitation.pop }}</span>
                   {% if h.precipitation.accumulation %}
-                    <span class="pop">{{ h.precipitation.accumulation }}</span>
+                    <span class="accumulation precipitation-accumulation dimmed">{{ h.precipitation.accumulation }}</span>
                   {% endif %}
                 </span>
 
@@ -194,10 +194,10 @@
                     <img class="inline-icon rain" src="{{ inlineIcons.rain }}" />
                   {% endif %}
 
-                  <span class="pop">{{ d.precipitation.pop }}</span>
+                  <span class="pop precipitation-pop">{{ d.precipitation.pop }}</span>
 
                   {% if d.precipitation.accumulation %}
-                    <span class="pop">{{ d.precipitation.accumulation }}</span>
+                    <span class="accumulation precipitation-accumulation dimmed">{{ d.precipitation.accumulation }}</span>
                   {% endif %}
 
                 </span>

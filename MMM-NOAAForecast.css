@@ -258,38 +258,46 @@
   line-height: 1.5;
 }
 
-/* Add spacing between precipitation and wind containers; precip cell can grow vertically for two lines. */
-.MMM-NOAAForecast
-  .wrapper.table
-  .forecast-container
-  .forecast-item
-  .precipitation-container {
-  display: inline-flex;
-  align-items: center;
-  gap: 1px;
-  padding-right: 3px;
-  max-width: 80px;
-  height: auto;
-}
-
-/* Precip: keep icon + PoP inline, wrap accumulation to next line */
 .MMM-NOAAForecast .forecast-container .forecast-item .precipitation-container {
-  display: inline-flex; /* unify behavior across layouts */
+  display: inline-grid;
+  grid-template-columns: auto auto;
   align-items: center;
-  flex-wrap: wrap; /* allow moving accumulation below */
-  gap: 3px;
+  justify-items: center;
+  column-gap: 3px;
+  row-gap: 2px;
 }
 
-/* Target the second pop (the accumulation) only when present */
 .MMM-NOAAForecast
   .forecast-container
   .forecast-item
   .precipitation-container
-  span.pop:nth-of-type(2) {
-  flex-basis: 100%; /* force a new row in the flex container */
-  display: block; /* also works outside flex (tiled) */
-  margin-top: 2px;
+  .inline-icon {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.MMM-NOAAForecast
+  .forecast-container
+  .forecast-item
+  .precipitation-container
+  .precipitation-pop {
+  grid-column: 2;
+  grid-row: 1;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.MMM-NOAAForecast
+  .forecast-container
+  .forecast-item
+  .precipitation-container
+  .precipitation-accumulation {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  display: block;
+  font-size: 0.78em;
   line-height: 1.1;
+  white-space: nowrap;
 }
 
 /* ------------ Table Layout ------------ */
@@ -375,6 +383,29 @@
   .wind-container
   .inline-icon {
   display: none;
+}
+
+.MMM-NOAAForecast
+  .wrapper.table
+  .forecast-container
+  .forecast-item
+  .precipitation-container {
+  min-width: 4.75em;
+}
+
+.MMM-NOAAForecast
+  .wrapper.table.with-column-header-icons
+  .forecast-container
+  .forecast-item
+  .precipitation-container
+  .precipitation-pop,
+.MMM-NOAAForecast
+  .wrapper.table.with-column-header-icons
+  .forecast-container
+  .forecast-item
+  .precipitation-container
+  .precipitation-accumulation {
+  grid-column: 1;
 }
 
 .MMM-NOAAForecast

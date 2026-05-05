@@ -12,20 +12,20 @@ IMPORTANT: Although it supports metric units, the textual data from NOAA is in i
 
 This module incorporates code and inspiration from [MMM-OpenWeatherForecast](https://github.com/Tom-Hirschberger/MMM-OpenWeatherForecast) by Tom Hirschberger, licensed under the MIT License.
 
-*NOTE:** This module uses the Nunjucks templating system introduced in version 2.2.0 of MagicMirror.  If you're seeing nothing on your display where you expect this module to appear, make sure your MagicMirror version is at least 2.2.0.
+\*NOTE:\*\* This module uses the Nunjucks templating system introduced in version 2.2.0 of MagicMirror. If you're seeing nothing on your display where you expect this module to appear, make sure your MagicMirror version is at least 2.2.0.
 
 ## Installation
 
 1. Navigate into your MagicMirror `modules` folder and execute<br>
-`git clone https://github.com/supermem613/MMM-NOAAForecast.git`.
+   `git clone https://github.com/supermem613/MMM-NOAAForecast.git`.
 2. Enter the new `MMM-NOAAForecast` directory and execute `npm install`.
 
 ## Configuration
 
 At a minimum you need to supply the following required configuration parameters:
 
-* `latitude`
-* `longitude`
+- `latitude`
+- `longitude`
 
 Find out your latitude and longitude here:
 `https://www.latlong.net/`.
@@ -102,7 +102,7 @@ Find out your latitude and longitude here:
     </tr>
     <tr>
       <td><code>showPrecipitation</code></td>
-      <td>Whether to show precipitation information. This affects current conditions, hourly and daily forecasts<br><br><strong>Type</strong> <code>Boolean</code><br>Defaults to <code>true</code></td>
+      <td>Whether to show precipitation information. This affects current conditions, hourly and daily forecasts. In <code>table</code> layout, hourly and daily rows stack accumulation beneath the precipitation chance so narrow columns stay readable.<br><br><strong>Type</strong> <code>Boolean</code><br>Defaults to <code>true</code></td>
     </tr>
     <tr>
       <td><code>showPrecipitationStartStop</code></td>
@@ -165,7 +165,6 @@ Find out your latitude and longitude here:
       <td>How you would like wind direction to be displayed.  Assumes index <code>0</code> is North and proceeds clockwise.<br><br><strong>Type</strong> <code>Array of Strings</code><br>Defaults to <code>["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]</code></td>
     </tr>
 
-
   </tbody>
 </table>
 
@@ -192,11 +191,9 @@ Find out your latitude and longitude here:
 
 ![Icon Sets](icons/iconsets.gif?raw=true "Icon Sets")
 
-
 ## Layouts
 
 ![Layouts](/screenshots/forecast-layouts.png?raw=true "Layouts")
-
 
 ## Styling
 
