@@ -424,7 +424,22 @@
   .wrapper.table
   .forecast-container
   .forecast-item
+  .temperature,
+.MMM-NOAAForecast
+  .wrapper.table
+  .forecast-container
+  .forecast-item
+  .temperature-container,
+.MMM-NOAAForecast
+  .wrapper.table
+  .forecast-container
+  .forecast-item
   .high-temperature,
+.MMM-NOAAForecast
+  .wrapper.table
+  .forecast-container
+  .forecast-item
+  .temperature-separator,
 .MMM-NOAAForecast
   .wrapper.table
   .forecast-container
