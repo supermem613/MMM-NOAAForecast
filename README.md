@@ -197,7 +197,7 @@ Find out your latitude and longitude here:
 
 ## Styling
 
-The module's width is controlled by the [`frameWidth`](#configuration) config option (default `300px`). Set it to match the width of neighbouring modules in the same region — for example, `frameWidth: 400` if your right column hosts a 400px-wide module like MMM-AINews.
+The module's width is controlled by the [`frameWidth`](#configuration) config option (default `300px`). Set it to match the width of neighbouring modules in the same region — raise it if you have a wider sibling module so the columns line up.
 
 ### Visual conventions
 
