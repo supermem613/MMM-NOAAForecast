@@ -570,6 +570,20 @@ describe("MMM-NOAAForecast Comprehensive Tests", () => {
 
       expect(result.windGust).toBe(" (max 15 km/h)");
     });
+
+    it("should remove units and compact speed ranges in compact mode", () => {
+      const result = module.formatWind("2 to 3 mph", "NW", "15 mph", true);
+
+      expect(result.windSpeed).toBe("2-3NW");
+      expect(result.windGust).toBe("G15");
+    });
+
+    it("should keep compact wind gust empty when gust is unavailable", () => {
+      const result = module.formatWind("10 mph", "NW", null, true);
+
+      expect(result.windSpeed).toBe("10NW");
+      expect(result.windGust).toBeNull();
+    });
   });
 
   // ============================================================================
@@ -614,6 +628,17 @@ describe("MMM-NOAAForecast Comprehensive Tests", () => {
       const result = module.forecastHourlyFactory(mockHourlyData);
 
       expect(result.temperature).toBe("65°");
+    });
+
+    it("should use compact wind when configured", () => {
+      module.config.compactForecastWind = true;
+      mockHourlyData.windSpeed = "10 mph";
+      mockHourlyData.windGust = "15 mph";
+
+      const result = module.forecastHourlyFactory(mockHourlyData);
+
+      expect(result.wind.windSpeed).toBe("10NW");
+      expect(result.wind.windGust).toBe("G15");
     });
   });
 
@@ -671,6 +696,17 @@ describe("MMM-NOAAForecast Comprehensive Tests", () => {
       const result = module.forecastDailyFactory(mockDailyData);
 
       expect(result.tempRange.low).toBe("--°");
+    });
+
+    it("should use compact wind when configured", () => {
+      module.config.compactForecastWind = true;
+      mockDailyData.windSpeed = "8 mph";
+      mockDailyData.windGust = "12 mph";
+
+      const result = module.forecastDailyFactory(mockDailyData);
+
+      expect(result.wind.windSpeed).toBe("8N");
+      expect(result.wind.windGust).toBe("G12");
     });
   });
 

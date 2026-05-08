@@ -48,10 +48,10 @@
 .MMM-NOAAForecast .current-conditions-wrapper {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: flex-end;
   gap: 16px;
   min-height: 100px;
-  text-align: left;
+  text-align: right;
 }
 
 .MMM-NOAAForecast .current-conditions-wrapper > .current-conditions-wrapper {
@@ -368,6 +368,15 @@
   text-align: right;
 }
 
+.MMM-NOAAForecast .wrapper.table .forecast-container .forecast-item .temperature,
+.MMM-NOAAForecast
+  .wrapper.table
+  .forecast-container
+  .forecast-item
+  .temperature-container {
+  text-align: right;
+}
+
 /* When column-header icons are present, drop the inline icons inside data rows
    to avoid duplicating the same signal in every row. */
 .MMM-NOAAForecast
@@ -456,6 +465,20 @@
   .accumulation {
   display: block;
   white-space: nowrap;
+}
+
+.MMM-NOAAForecast .wrapper.table .forecast-container .forecast-item .wind-container {
+  min-width: 3.5em;
+}
+
+.MMM-NOAAForecast
+  .wrapper.table
+  .forecast-container
+  .forecast-item
+  .wind-container
+  .wind-gusts {
+  font-size: 0.78em;
+  line-height: 1.05;
 }
 
 /* ------------ Today / Next-upcoming amber accent ------------ */

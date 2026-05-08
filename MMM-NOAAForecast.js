@@ -28,6 +28,7 @@ Module.register("MMM-NOAAForecast", {
     includeTodayInDailyForecast: false,
     showPrecipitation: true,
     concise: true,
+    compactForecastWind: false,
     showWind: true,
     showFeelsLike: true,
     showPrecipitationStartStop: false,
@@ -1041,7 +1042,8 @@ Module.register("MMM-NOAAForecast", {
     fItem.wind = this.formatWind(
       fData.windSpeed,
       fData.windDirection,
-      fData.windGust
+      fData.windGust,
+      this.config.compactForecastWind
     );
 
     return fItem;
@@ -1081,7 +1083,8 @@ Module.register("MMM-NOAAForecast", {
     fItem.wind = this.formatWind(
       fData.windSpeed,
       fData.windDirection,
-      fData.windGust
+      fData.windGust,
+      this.config.compactForecastWind
     );
 
     return fItem;
@@ -1136,10 +1139,24 @@ Module.register("MMM-NOAAForecast", {
     };
   },
 
+  compactWindSpeed: function (speed) {
+    return String(speed)
+      .replace(/\s+to\s+/i, "-")
+      .replace(/\s*(?:mph|km\/h|m\/s)\b/i, "")
+      .trim();
+  },
+
   /*
       Returns a formatted data object for wind conditions
      */
-  formatWind: function (speed, bearing, gust) {
+  formatWind: function (speed, bearing, gust, compact) {
+    if (compact) {
+      return {
+        windSpeed: `${this.compactWindSpeed(speed)}${bearing || ""}`,
+        windGust: gust ? `G${this.compactWindSpeed(gust)}` : null
+      };
+    }
+
     //wind gust
     var windGust = null;
 
